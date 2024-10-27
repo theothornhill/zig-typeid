@@ -1,0 +1,2 @@
+# TypeID implementation for Zig
+
