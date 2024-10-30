@@ -42,9 +42,15 @@ pub fn encode(s: []const u8) ![26]u8 {
 
 test "encode" {
     try std.testing.expectEqualStrings(
+        "7tfjyxwex59k4s4xd4yas5cejn",
+        (try encode("fa7cbdde-3ba5-4cc9-9275-a4f2b2563a55"))[0..],
+    );
+
+    try std.testing.expectEqualStrings(
         "01h2e8kqvbfwea724h75qc655w",
         (try encode("01889c89-df6b-7f1c-a388-91396ec314bc"))[0..],
     );
+
     try std.testing.expectEqualStrings(
         "00000000000000000000000000",
         (try encode("00000000-0000-0000-0000-000000000000"))[0..],
@@ -115,6 +121,13 @@ pub fn decode(s: []const u8) ![]const u8 {
         return error.InvalidLength;
     }
 
+    // Because this is a modified base32 we allow ourselves the luxury of
+    // erroring early if needed. The spec states this is an overflow, and that
+    // this is the check to do, so we oblige.
+    if (s[0] > '7') {
+        return error.Overflow;
+    }
+
     // Check if all the characters are part of the expected base32 character set.
     if (dec[s[0]] == 0xFF or
         dec[s[1]] == 0xFF or
@@ -150,14 +163,6 @@ pub fn decode(s: []const u8) ![]const u8 {
 
     // 6 bytes timestamp (48 bits)
     dest[0] = (dec[s[0]] << 5) | dec[s[1]];
-
-    // Because this is a modified base32 we allow ourselves the luxury of
-    // erroring early if needed. The spec states this is an overflow, and that
-    // this is the check to do, so we oblige.
-    if (dest[0] > 7) {
-        return error.Overflow;
-    }
-    
     dest[1] = (dec[s[2]] << 3) | (dec[s[3]] >> 2);
     dest[2] = (dec[s[3]] << 6) | (dec[s[4]] << 1) | (dec[s[5]] >> 4);
     dest[3] = (dec[s[5]] << 4) | (dec[s[6]] >> 1);
@@ -184,15 +189,22 @@ test "decode" {
         "01889c89-df6b-7f1c-a388-91396ec314bc",
         try decode("01h2e8kqvbfwea724h75qc655w"),
     );
-    
+
+    try std.testing.expectEqualStrings(
+        "fa7cbdde-3ba5-4cc9-9275-a4f2b2563a55",
+        try decode("7tfjyxwex59k4s4xd4yas5cejn"),
+    );
+
     try std.testing.expectError(
         error.InvalidLength,
         decode("123456789012345678901234567"),
     );
+
     try std.testing.expectError(
         error.Overflow,
         decode("8zzzzzzzzzzzzzzzzzzzzzzzzz"),
     );
+
     try std.testing.expectError(
         error.InvalidLength,
         decode("1234567890123456789012345"),

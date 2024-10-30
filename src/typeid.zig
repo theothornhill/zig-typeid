@@ -53,6 +53,10 @@ test "typeid encoding/decoding" {
         try typeid("foo", "01889c89-df6b-7f1c-a388-91396ec314bc"),
     );
     try std.testing.expectEqualStrings(
+        "foo_7tfjyxwex59k4s4xd4yas5cejn",
+        try typeid("foo", "fa7cbdde-3ba5-4cc9-9275-a4f2b2563a55"),
+    );
+    try std.testing.expectEqualStrings(
         "bar_01h2e8kqvbfwea724h75qc655w",
         try typeid("bar", "01889c89-df6b-7f1c-a388-91396ec314bc"),
     );
