@@ -1,12 +1,16 @@
 const std = @import("std");
 
 inline fn char_to_byte(c: u8) !u8 {
-    switch (c) {
-        '0'...'9' => return c - '0',
-        'a'...'f' => return c - 'a' + 10,
-        'A'...'F' => return c - 'A' + 10,
-        else => return error.InvalidCharacter,
+    if (c >= '0' and c <= '9') {
+        return c - '0';
     }
+    if (c >= 'a' and c <= 'f') {
+        return c - 'a' + 10;
+    }
+    if (c >= 'A' and c <= 'F') {
+        return c - 'A' + 10;
+    }
+    return error.InvalidCharacter;
 }
 
 pub inline fn from(uuid: []const u8) ![16]u8 {
