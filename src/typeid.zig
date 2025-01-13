@@ -12,7 +12,7 @@ pub fn typeid(comptime prefix: []const u8, suffix: []const u8, buf: *[99]u8) !us
         return error.InvalidCharacter;
     }
 
-    if (prefix[prefix.len-1] == '_') {
+    if (prefix[prefix.len - 1] == '_') {
         return error.InvalidCharacter;
     }
 
