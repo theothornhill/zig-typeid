@@ -27,6 +27,18 @@ pub fn typeid(comptime prefix: []const u8, suffix: []const u8, buf: *[99]u8) !us
     return len;
 }
 
+pub fn typeid_alloc(comptime prefix: []const u8, id: []const u8, allocator: std.mem.Allocator) ![]const u8 {
+    var id_buf: []u8 = allocator.alloc(u8, 99) catch std.debug.panic("OOM", .{});
+    defer allocator.free(id_buf);
+
+    const id_len = typeid(prefix, id, id_buf[0..99]) catch std.debug.panic(
+        "Could not create id {s}",
+        .{id},
+    );
+
+    return allocator.dupe(u8, id_buf[0..id_len]);
+}
+
 const max_prefix_length = 63;
 const max_suffix_length = 26;
 const max_typeid_length = max_prefix_length + max_suffix_length;
@@ -97,5 +109,16 @@ test "typeid encoding/decoding" {
     try std.testing.expectEqualStrings(
         "01889c89-df6b-7f1c-a388-91396ec314bc",
         p.suffix,
+    );
+}
+
+test "convenience" {
+    const alloc = std.testing.allocator;
+    const id = try typeid_alloc("foo", "d4f078bd-fc82-4502-ae35-38b1d55c97d5", alloc);
+    defer alloc.free(id);
+
+    try std.testing.expectEqualStrings(
+        "foo_6my1wbvz428m1awd9rp7ans5yn",
+        id,
     );
 }
