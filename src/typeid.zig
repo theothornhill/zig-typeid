@@ -27,7 +27,7 @@ pub fn typeid(comptime prefix: []const u8, suffix: []const u8, buf: *[99]u8) !us
     return len;
 }
 
-pub fn typeid_alloc(comptime prefix: []const u8, id: []const u8, allocator: std.mem.Allocator) ![]const u8 {
+pub fn typeid_alloc(allocator: std.mem.Allocator, comptime prefix: []const u8, id: []const u8) ![]const u8 {
     var id_buf: []u8 = allocator.alloc(u8, 99) catch std.debug.panic("OOM", .{});
     defer allocator.free(id_buf);
 
@@ -114,7 +114,7 @@ test "typeid encoding/decoding" {
 
 test "convenience" {
     const alloc = std.testing.allocator;
-    const id = try typeid_alloc("foo", "d4f078bd-fc82-4502-ae35-38b1d55c97d5", alloc);
+    const id = try typeid_alloc(alloc, "foo", "d4f078bd-fc82-4502-ae35-38b1d55c97d5");
     defer alloc.free(id);
 
     try std.testing.expectEqualStrings(
