@@ -1,23 +1,15 @@
-(define-module
+(define-module (zig-typeid-package)
   #:use-module (guix git)
   #:use-module (guix gexp)
   #:use-module (guix git-download)
   #:use-module (guix utils)
-  #:use-module (guix download)
   #:use-module (guix packages)
-  #:use-module (guix modules)
   #:use-module (guix licenses)
-  #:use-module (guix build-system)
   #:use-module (guix build-system zig)
-  #:use-module (guix build-system copy)
-  #:use-module (gnu packages)
-  #:use-module (gnu packages llvm)
-  #:use-module (gnu packages llvm-meta)
   #:use-module (gnu packages zig)
+  #:use-module (gnu packages zig-xyz)
   #:use-module (gnu packages base)
-  #:use-module (gnu packages compression)
   #:use-module ((guix licenses) #:prefix license:))
-
 
 (define-public zig-typeid
   (let ((vcs-file? (or (git-predicate (string-append (current-source-directory) "/../.."))
