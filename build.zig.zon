@@ -1,7 +1,7 @@
 .{
-    .name = "zig-typeid",
-    .version = "0.0.1",
-    .minimum_zig_version = "0.13.0",
+    .name = .zig_typeid,
+    .version = "1.0.0",
+    .fingerprint = 0x42206bb5100b2934,
     .dependencies = .{},
     .paths = .{
         "build.zig",
