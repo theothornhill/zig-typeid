@@ -1,7 +1,8 @@
 const std = @import("std");
+const Sha1 = std.crypto.hash.Sha1;
+
 const base32 = @import("base32.zig");
 const UUID = @import("uuid.zig");
-const Sha1 = std.crypto.hash.Sha1;
 
 /// Generate a UUID v5 over `v` from the NULL namespace
 pub fn uuid5(v: []const u8) [16]u8 {
