@@ -3,85 +3,88 @@ const uuid = @import("uuid.zig");
 
 const alphabet = "0123456789abcdefghjkmnpqrstvwxyz";
 
-pub fn encode(s: []const u8) ![26]u8 {
-    const src: [16]u8 = try uuid.from(s);
-
+pub fn encode(s: [16]u8) ![26]u8 {
     var dst: [26]u8 = undefined;
     // 10 byte timestamp
-    dst[0] = alphabet[(src[0] & 224) >> 5];
-    dst[1] = alphabet[src[0] & 31];
-    dst[2] = alphabet[(src[1] & 248) >> 3];
-    dst[3] = alphabet[((src[1] & 7) << 2) | ((src[2] & 192) >> 6)];
-    dst[4] = alphabet[(src[2] & 62) >> 1];
-    dst[5] = alphabet[((src[2] & 1) << 4) | ((src[3] & 240) >> 4)];
-    dst[6] = alphabet[((src[3] & 15) << 1) | ((src[4] & 128) >> 7)];
-    dst[7] = alphabet[(src[4] & 124) >> 2];
-    dst[8] = alphabet[((src[4] & 3) << 3) | ((src[5] & 224) >> 5)];
-    dst[9] = alphabet[src[5] & 31];
+    dst[0] = alphabet[(s[0] & 224) >> 5];
+    dst[1] = alphabet[s[0] & 31];
+    dst[2] = alphabet[(s[1] & 248) >> 3];
+    dst[3] = alphabet[((s[1] & 7) << 2) | ((s[2] & 192) >> 6)];
+    dst[4] = alphabet[(s[2] & 62) >> 1];
+    dst[5] = alphabet[((s[2] & 1) << 4) | ((s[3] & 240) >> 4)];
+    dst[6] = alphabet[((s[3] & 15) << 1) | ((s[4] & 128) >> 7)];
+    dst[7] = alphabet[(s[4] & 124) >> 2];
+    dst[8] = alphabet[((s[4] & 3) << 3) | ((s[5] & 224) >> 5)];
+    dst[9] = alphabet[s[5] & 31];
 
     // 16 bytes of entropy
-    dst[10] = alphabet[(src[6] & 248) >> 3];
-    dst[11] = alphabet[((src[6] & 7) << 2) | ((src[7] & 192) >> 6)];
-    dst[12] = alphabet[(src[7] & 62) >> 1];
-    dst[13] = alphabet[((src[7] & 1) << 4) | ((src[8] & 240) >> 4)];
-    dst[14] = alphabet[((src[8] & 15) << 1) | ((src[9] & 128) >> 7)];
-    dst[15] = alphabet[(src[9] & 124) >> 2];
-    dst[16] = alphabet[((src[9] & 3) << 3) | ((src[10] & 224) >> 5)];
-    dst[17] = alphabet[src[10] & 31];
-    dst[18] = alphabet[(src[11] & 248) >> 3];
-    dst[19] = alphabet[((src[11] & 7) << 2) | ((src[12] & 192) >> 6)];
-    dst[20] = alphabet[(src[12] & 62) >> 1];
-    dst[21] = alphabet[((src[12] & 1) << 4) | ((src[13] & 240) >> 4)];
-    dst[22] = alphabet[((src[13] & 15) << 1) | ((src[14] & 128) >> 7)];
-    dst[23] = alphabet[(src[14] & 124) >> 2];
-    dst[24] = alphabet[((src[14] & 3) << 3) | ((src[15] & 224) >> 5)];
-    dst[25] = alphabet[src[15] & 31];
+    dst[10] = alphabet[(s[6] & 248) >> 3];
+    dst[11] = alphabet[((s[6] & 7) << 2) | ((s[7] & 192) >> 6)];
+    dst[12] = alphabet[(s[7] & 62) >> 1];
+    dst[13] = alphabet[((s[7] & 1) << 4) | ((s[8] & 240) >> 4)];
+    dst[14] = alphabet[((s[8] & 15) << 1) | ((s[9] & 128) >> 7)];
+    dst[15] = alphabet[(s[9] & 124) >> 2];
+    dst[16] = alphabet[((s[9] & 3) << 3) | ((s[10] & 224) >> 5)];
+    dst[17] = alphabet[s[10] & 31];
+    dst[18] = alphabet[(s[11] & 248) >> 3];
+    dst[19] = alphabet[((s[11] & 7) << 2) | ((s[12] & 192) >> 6)];
+    dst[20] = alphabet[(s[12] & 62) >> 1];
+    dst[21] = alphabet[((s[12] & 1) << 4) | ((s[13] & 240) >> 4)];
+    dst[22] = alphabet[((s[13] & 15) << 1) | ((s[14] & 128) >> 7)];
+    dst[23] = alphabet[(s[14] & 124) >> 2];
+    dst[24] = alphabet[((s[14] & 3) << 3) | ((s[15] & 224) >> 5)];
+    dst[25] = alphabet[s[15] & 31];
 
     return dst;
+}
+
+fn from_str(s: []const u8) ![26]u8 {
+    const src: [16]u8 = try uuid.from(s);
+    return try encode(src);
 }
 
 test "encode" {
     try std.testing.expectEqualStrings(
         "7tfjyxwex59k4s4xd4yas5cejn",
-        (try encode("fa7cbdde-3ba5-4cc9-9275-a4f2b2563a55"))[0..],
+        (try from_str("fa7cbdde-3ba5-4cc9-9275-a4f2b2563a55"))[0..],
     );
 
     try std.testing.expectEqualStrings(
         "01h2e8kqvbfwea724h75qc655w",
-        (try encode("01889c89-df6b-7f1c-a388-91396ec314bc"))[0..],
+        (try from_str("01889c89-df6b-7f1c-a388-91396ec314bc"))[0..],
     );
 
     try std.testing.expectEqualStrings(
         "00000000000000000000000000",
-        (try encode("00000000-0000-0000-0000-000000000000"))[0..],
+        (try from_str("00000000-0000-0000-0000-000000000000"))[0..],
     );
     try std.testing.expectEqualStrings(
         "00000000000000000000000001",
-        (try encode("00000000-0000-0000-0000-000000000001"))[0..],
+        (try from_str("00000000-0000-0000-0000-000000000001"))[0..],
     );
     try std.testing.expectEqualStrings(
         "0000000000000000000000000a",
-        (try encode("00000000-0000-0000-0000-00000000000a"))[0..],
+        (try from_str("00000000-0000-0000-0000-00000000000a"))[0..],
     );
     try std.testing.expectEqualStrings(
         "0000000000000000000000000g",
-        (try encode("00000000-0000-0000-0000-000000000010"))[0..],
+        (try from_str("00000000-0000-0000-0000-000000000010"))[0..],
     );
     try std.testing.expectEqualStrings(
         "7zzzzzzzzzzzzzzzzzzzzzzzzz",
-        (try encode("ffffffff-ffff-ffff-ffff-ffffffffffff"))[0..],
+        (try from_str("ffffffff-ffff-ffff-ffff-ffffffffffff"))[0..],
     );
     try std.testing.expectEqualStrings(
         "7zzzzzzzzzzzzzzzzzzzzzzzzz",
-        (try encode("ffffffff-ffff-ffff-ffff-ffffffffffff"))[0..],
+        (try from_str("ffffffff-ffff-ffff-ffff-ffffffffffff"))[0..],
     );
     try std.testing.expectEqualStrings(
         "0123456789abcdefghjkmnpqrs",
-        (try encode("0110c853-1d09-52d8-d73e-1194e95b5f19"))[0..],
+        (try from_str("0110c853-1d09-52d8-d73e-1194e95b5f19"))[0..],
     );
     try std.testing.expectEqualStrings(
         "01h455vb4pex5vsknk084sn02q",
-        (try encode("01890a5d-ac96-774b-bcce-b302099a8057"))[0..],
+        (try from_str("01890a5d-ac96-774b-bcce-b302099a8057"))[0..],
     );
 }
 
