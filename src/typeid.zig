@@ -1,6 +1,25 @@
 const std = @import("std");
 const base32 = @import("base32.zig");
 const UUID = @import("uuid.zig");
+const Sha1 = std.crypto.hash.Sha1;
+
+/// Generate a UUID v5 over `v` from the NULL namespace
+pub fn uuid5(v: []const u8) [16]u8 {
+    var hasher = Sha1.init(.{});
+    hasher.update(&.{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
+    hasher.update(v);
+    var hash = hasher.finalResult();
+    var uuid: [16]u8 = undefined;
+    @memcpy(&uuid, hash[0..16]);
+    uuid[6] = uuid[6] & 0x0f | 0x50; // version = 5
+    uuid[8] = uuid[8] & 0b10111111 | 0b10000000; // variant = 0b10
+    return uuid;
+}
+
+test uuid5 {
+    const python3_uuid5_reference: [16]u8 = .{ 0x56, 0x33, 0xa3, 0xf9, 0x46, 0xf7, 0x50, 0xf5, 0xba, 0x09, 0x76, 0x2e, 0x3f, 0xd9, 0x0b, 0x52 };
+    try std.testing.expectEqualSlices(u8, &python3_uuid5_reference, &uuid5("hey"));
+}
 
 const max_prefix_len = 63;
 const max_suffix_len = 36;
