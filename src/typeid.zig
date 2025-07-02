@@ -8,9 +8,8 @@ pub fn uuid5(v: []const u8) [16]u8 {
     var hasher = Sha1.init(.{});
     hasher.update(&.{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
     hasher.update(v);
-    var hash = hasher.finalResult();
     var uuid: [16]u8 = undefined;
-    @memcpy(&uuid, hash[0..16]);
+    @memcpy(&uuid, hasher.finalResult()[0..16]);
     uuid[6] = uuid[6] & 0x0f | 0x50; // version = 5
     uuid[8] = uuid[8] & 0b10111111 | 0b10000000; // variant = 0b10
     return uuid;
