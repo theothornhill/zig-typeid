@@ -23,9 +23,11 @@ pub fn build(b: *std.Build) void {
     // but does not run it.
     const main_tests = b.addTest(.{
         .name = "tests",
-        .root_source_file = b.path("src/typeid.zig"),
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/typeid.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
     });
 
     b.installArtifact(main_tests);
