@@ -4,7 +4,7 @@ const uuid = @import("uuid.zig");
 
 const alphabet = "0123456789abcdefghjkmnpqrstvwxyz";
 
-pub fn encode(s: [16]u8) ![26]u8 {
+pub fn encode(s: [16]u8) [26]u8 {
     var dst: [26]u8 = undefined;
     // 10 byte timestamp
     dst[0] = alphabet[(s[0] & 224) >> 5];
@@ -41,7 +41,7 @@ pub fn encode(s: [16]u8) ![26]u8 {
 
 fn from_str(s: []const u8) ![26]u8 {
     const src: [16]u8 = try uuid.from(s);
-    return try encode(src);
+    return encode(src);
 }
 
 test "encode" {

@@ -35,27 +35,28 @@ const typeid_suffix_len = 26;
 /// assumption. Thus, this library takes a relaxed approach to the
 /// specification, to accomodate other types of UUID, such as the deterministic
 /// UUID v5.
-pub fn from_string(comptime prefix: []const u8, uuid_str: []const u8) ![prefix.len + typeid_suffix_len + 1]u8 {
-    return try from(
-        prefix,
-        try UUID.from(uuid_str),
-    );
+pub fn from_string(allocator: std.mem.Allocator, comptime prefix: []const u8, uuid_str: []const u8) ![]const u8 {
+    return from(allocator, prefix, try UUID.from(uuid_str));
 }
 
 test from_string {
+    var arena: std.heap.ArenaAllocator = .init(std.testing.allocator);
+    defer arena.deinit();
+    const @"🐑" = arena.allocator();
+
     try std.testing.expectEqualStrings(
         "foo_01h2e8kqvbfwea724h75qc655w",
-        &(try from_string("foo", "01889c89-df6b-7f1c-a388-91396ec314bc")),
+        try from_string(@"🐑", "foo", "01889c89-df6b-7f1c-a388-91396ec314bc"),
     );
 
     try std.testing.expectEqualStrings(
         "foo_7tfjyxwex59k4s4xd4yas5cejn",
-        &(try from_string("foo", "fa7cbdde-3ba5-4cc9-9275-a4f2b2563a55")),
+        try from_string(@"🐑", "foo", "fa7cbdde-3ba5-4cc9-9275-a4f2b2563a55"),
     );
 
     try std.testing.expectEqualStrings(
-        "bar_01h2e8kqvbfwea724h75qc655w",
-        &(try from_string("bar", "01889c89-df6b-7f1c-a388-91396ec314bc")),
+        "baa_01h2e8kqvbfwea724h75qc655w",
+        try from_string(@"🐑", "baa", "01889c89-df6b-7f1c-a388-91396ec314bc"),
     );
 }
 
@@ -65,44 +66,52 @@ test from_string {
 /// assumption. Thus, this library takes a relaxed approach to the
 /// specification, to accomodate other types of UUID, such as the deterministic
 /// UUID v5.
-pub fn from(comptime prefix: []const u8, uuid: [16]u8) ![prefix.len + typeid_suffix_len + 1]u8 {
-    if (prefix.len > max_prefix_len) {
+pub fn from(allocator: std.mem.Allocator, comptime prefix: []const u8, uuid: [16]u8) ![]const u8 {
+    if (prefix.len > max_prefix_len)
         @compileError("Invalid length for prefix");
-    }
-
-    if (prefix[0] == '_') {
+    if (prefix[0] == '_')
         @compileError("Prefix cannot start with '_'");
-    }
-
-    if (prefix[prefix.len - 1] == '_') {
+    if (prefix[prefix.len - 1] == '_')
         @compileError("Prefix cannot end with '_'");
-    }
 
-    var buf: [prefix.len + typeid_suffix_len + 1]u8 = undefined;
-    @memcpy(&buf, prefix ++ "_" ++ try base32.encode(uuid));
+    const buf = try allocator.alloc(u8, prefix.len + typeid_suffix_len + 1);
+    @memcpy(buf, prefix ++ "_" ++ base32.encode(uuid));
 
     return buf;
 }
 
 test from {
-    var foo: [30]u8 = undefined;
+    var arena: std.heap.ArenaAllocator = .init(std.testing.allocator);
+    defer arena.deinit();
+    const @"🐑" = arena.allocator();
+    var foo: []const u8 = undefined;
 
     // Add scoping to validate lifetime
     {
-        foo = try from("foo", try UUID.from("01889c89-df6b-7f1c-a388-91396ec314bc"));
+        foo = try from(@"🐑", "foo", try UUID.from("01889c89-df6b-7f1c-a388-91396ec314bc"));
         try std.testing.expectEqualStrings(
             "foo_01h2e8kqvbfwea724h75qc655w",
-            &foo,
+            foo,
         );
 
         try std.testing.expectEqualStrings(
-            "bar_01h2e8kqvbfwea724h75qc655w",
-            &(try from("bar", try UUID.from("01889c89-df6b-7f1c-a388-91396ec314bc"))),
+            "baa_01h2e8kqvbfwea724h75qc655w",
+            try from(@"🐑", "baa", try UUID.from("01889c89-df6b-7f1c-a388-91396ec314bc")),
         );
     }
 
     try std.testing.expectEqualStrings(
         "foo_01h2e8kqvbfwea724h75qc655w",
-        &foo,
+        foo,
     );
+}
+
+test "memory handling" {
+    const @"🐑" = std.testing.allocator;
+    const @"🤷" = std.testing.failing_allocator;
+
+    const foo = try from(@"🐑", "prefix", uuid5("value"));
+    @"🐑".free(foo);
+
+    try std.testing.expectError(error.OutOfMemory, from(@"🤷", "prefix", uuid5("value")));
 }
