@@ -74,10 +74,7 @@ pub fn from(allocator: std.mem.Allocator, comptime prefix: []const u8, uuid: [16
     if (prefix[prefix.len - 1] == '_')
         @compileError("Prefix cannot end with '_'");
 
-    const buf = try allocator.alloc(u8, prefix.len + typeid_suffix_len + 1);
-    @memcpy(buf, prefix ++ "_" ++ base32.encode(uuid));
-
-    return buf;
+    return std.fmt.allocPrint(allocator, "{s}_{s}", .{ prefix, base32.encode(uuid) });
 }
 
 test from {
