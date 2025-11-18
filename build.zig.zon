@@ -1,6 +1,6 @@
 .{
     .name = .zig_typeid,
-    .version = "3.0.0",
+    .version = "4.0.0",
     .fingerprint = 0x42206bb5100b2934,
     .dependencies = .{},
     .paths = .{
