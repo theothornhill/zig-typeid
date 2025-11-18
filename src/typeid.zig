@@ -81,24 +81,21 @@ test from {
     var arena: std.heap.ArenaAllocator = .init(std.testing.allocator);
     defer arena.deinit();
     const @"🐑" = arena.allocator();
-    var foo: []const u8 = undefined;
 
-    // Add scoping to validate lifetime
-    {
-        foo = try from(@"🐑", "foo", try UUID.from("01889c89-df6b-7f1c-a388-91396ec314bc"));
-        try std.testing.expectEqualStrings(
-            "foo_01h2e8kqvbfwea724h75qc655w",
-            foo,
-        );
-
-        try std.testing.expectEqualStrings(
-            "baa_01h2e8kqvbfwea724h75qc655w",
-            try from(@"🐑", "baa", try UUID.from("01889c89-df6b-7f1c-a388-91396ec314bc")),
-        );
-    }
+    const foo = try from(@"🐑", "foo", try UUID.from("01889c89-df6b-7f1c-a388-91396ec314ba"));
+    try std.testing.expectEqualStrings(
+        "foo_01h2e8kqvbfwea724h75qc655t",
+        foo,
+    );
 
     try std.testing.expectEqualStrings(
-        "foo_01h2e8kqvbfwea724h75qc655w",
+        "baa_01h2e8kqvbfwea724h75qc655w",
+        try from(@"🐑", "baa", try UUID.from("01889c89-df6b-7f1c-a388-91396ec314bc")),
+    );
+
+    // Previously generated IDs are not invalidated
+    try std.testing.expectEqualStrings(
+        "foo_01h2e8kqvbfwea724h75qc655t",
         foo,
     );
 }
