@@ -100,6 +100,33 @@ test from {
     );
 }
 
+/// Convert a `typeID` to `uuid`
+///
+/// Accepts both prefixed (user_01h2e8kqvbfwea724h75qc655w) and bare
+/// (01h2e8kqvbfwea724h75qc655w) typeIDs.
+pub fn to_uuid(typeid_str: []const u8) ![36]u8 {
+    const suffix = if (std.mem.lastIndexOfScalar(u8, typeid_str, '_')) |idx|
+        typeid_str[idx + 1 ..]
+    else
+        typeid_str;
+    return base32.decode(suffix);
+}
+
+test to_uuid {
+    try std.testing.expectEqualStrings(
+        "01889c89-df6b-7f1c-a388-91396ec314bc",
+        &try to_uuid("user_01h2e8kqvbfwea724h75qc655w"),
+    );
+
+    try std.testing.expectEqualStrings(
+        "01889c89-df6b-7f1c-a388-91396ec314bc",
+        &try to_uuid("01h2e8kqvbfwea724h75qc655w"),
+    );
+
+    try std.testing.expectError(error.InvalidLength, to_uuid("user_tooshort"));
+    try std.testing.expectError(error.Overflow, to_uuid("user_8zzzzzzzzzzzzzzzzzzzzzzzzz"));
+}
+
 test "memory handling" {
     const @"🐑" = std.testing.allocator;
     const @"🤷" = std.testing.failing_allocator;
