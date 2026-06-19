@@ -59,7 +59,7 @@ inline fn byte_to_hex(byte: u8) []const u8 {
     };
 }
 
-pub fn to(bytes: [16]u8) ![]const u8 {
+pub fn to(bytes: [16]u8) [36]u8 {
     var uuid: [36]u8 = undefined;
 
     var dest_idx: usize = 0;
@@ -74,7 +74,7 @@ pub fn to(bytes: [16]u8) ![]const u8 {
         dest_idx += 2;
     }
 
-    return uuid[0..];
+    return uuid;
 }
 
 test "to" {
@@ -99,6 +99,6 @@ test "to" {
 
     try std.testing.expectEqualStrings(
         "550e8400-e29b-41d4-a716-446655440000",
-        try to(test_bytes),
+        &to(test_bytes),
     );
 }
