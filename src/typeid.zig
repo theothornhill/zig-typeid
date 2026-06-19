@@ -127,6 +127,14 @@ test to_uuid {
     try std.testing.expectError(error.Overflow, to_uuid("user_8zzzzzzzzzzzzzzzzzzzzzzzzz"));
 }
 
+test "scope" {
+    var buf: [36]u8 = undefined;
+    {
+        buf = try to_uuid("user_01h2e8kqvbfwea724h75qc655w");
+    }
+    try std.testing.expectEqualStrings("01889c89-df6b-7f1c-a388-91396ec314bc", &buf);
+}
+
 test "memory handling" {
     const @"🐑" = std.testing.allocator;
     const @"🤷" = std.testing.failing_allocator;
